@@ -1,0 +1,83 @@
+# Development environment values for audit-service
+# Optimized for local Minikube deployment
+
+replicaCount: 1
+
+image:
+  repository: gcr.io/PROJECT_ID/cotai-audit-service
+  pullPolicy: IfNotPresent
+  tag: "dev-latest"
+
+resources:
+  enabled: true
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+env:
+  ENVIRONMENT: development
+  LOG_LEVEL: debug
+  DATABASE_HOST: audit-service-postgresql
+  DATABASE_SSL_MODE: disable
+  REDIS_HOST: audit-service-redis-master
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger-collector:4317"
+
+# Enable local PostgreSQL for development
+postgresql:
+  enabled: true
+  auth:
+    database: cotai_auth
+    username: postgres
+    password: devpassword123
+  primary:
+    persistence:
+      enabled: false  # No persistence in dev
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+
+# Enable local Redis for development
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+    password: devpassword123
+  master:
+    persistence:
+      enabled: false  # No persistence in dev
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+      limits:
+        memory: 256Mi
+        cpu: 200m
+
+# Disable production features in dev
+podDisruptionBudget:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+ingress:
+  enabled: false

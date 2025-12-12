@@ -344,6 +344,110 @@ kubectl port-forward svc/grafana 3000:3000 -n observability
 
 ---
 
+## 🚢 Deployment with Helm
+
+### Helm Charts Structure
+
+All 7 microservices have production-ready Helm charts with multi-environment support:
+
+```
+<service>/charts/<service>/
+├── Chart.yaml                    # Metadata and dependencies
+├── values.yaml                   # Base configuration (all parameters)
+├── values-dev.yaml               # Development overrides (local dependencies)
+├── values-staging.yaml           # Staging overrides (managed services, 2 replicas)
+├── values-prod.yaml              # Production overrides (HA, security, 3+ replicas)
+└── templates/
+    ├── _helpers.tpl              # Reusable template functions
+    ├── deployment.yaml           # Kubernetes Deployment
+    ├── service.yaml              # ClusterIP service (gRPC + metrics)
+    ├── configmap.yaml            # Environment variables
+    ├── serviceaccount.yaml       # Service account (Workload Identity)
+    ├── ingress.yaml              # Ingress (conditional)
+    ├── hpa.yaml                  # HorizontalPodAutoscaler (conditional)
+    ├── poddisruptionbudget.yaml  # PDB for HA (conditional)
+    └── networkpolicy.yaml        # Network policies (conditional)
+```
+
+### Deploy to Development (Local)
+
+```bash
+# Install with local PostgreSQL and Redis dependencies
+cd auth-service/charts/auth-service
+helm dependency update
+helm install auth-service . -f values-dev.yaml --create-namespace -n dev
+
+# Verify deployment
+kubectl get pods -n dev -w
+kubectl logs -f deployment/auth-service -n dev
+```
+
+### Deploy to Staging
+
+```bash
+# Deploy with managed Cloud SQL and Memorystore
+helm upgrade --install auth-service ./auth-service/charts/auth-service \
+  -f values-staging.yaml \
+  --set image.tag="v1.2.3" \
+  --namespace staging \
+  --create-namespace \
+  --atomic --wait
+
+# Check rollout status
+kubectl rollout status deployment/auth-service -n staging
+```
+
+### Deploy to Production
+
+```bash
+# Production deployment with all security features enabled
+helm upgrade --install auth-service ./auth-service/charts/auth-service \
+  -f values-prod.yaml \
+  --set image.tag="v1.2.3" \
+  --namespace production \
+  --create-namespace \
+  --atomic --wait --timeout 10m
+
+# Verify with health checks
+kubectl get pods -n production -l app.kubernetes.io/name=auth-service
+kubectl get hpa -n production
+kubectl get pdb -n production
+```
+
+### Environment Configuration Summary
+
+| Feature | Development | Staging | Production |
+|---------|-------------|---------|------------|
+| **Replicas** | 1 | 2 (HPA: 2-5) | 3 (HPA: 3-10) |
+| **CPU/Memory** | 100m/128Mi | 200m/256Mi | 500m/512Mi |
+| **PostgreSQL** | Local (Bitnami) | Cloud SQL | Cloud SQL HA |
+| **Redis** | Local (Bitnami) | Memorystore | Memorystore HA |
+| **Logging** | DEBUG | INFO | WARN |
+| **PodDisruptionBudget** | ❌ | ✅ (minAvailable: 1) | ✅ (minAvailable: 2) |
+| **NetworkPolicy** | ❌ | ✅ | ✅ (deny-all-by-default) |
+| **TLS/Ingress** | ❌ | ✅ (Let's Encrypt staging) | ✅ (Let's Encrypt prod) |
+| **Workload Identity** | ❌ | ✅ | ✅ |
+| **Cost** | $0/month | ~$215/month | ~$1,350/month |
+
+See [INFRASTRUCTURE-DECISIONS.md](docs/INFRASTRUCTURE-DECISIONS.md) for detailed infrastructure strategies and cost optimization.
+
+### Helm Chart Validation
+
+```bash
+# Lint all charts
+for service in auth edital procurement bidding notification audit api-gateway; do
+  helm lint ${service}-service/charts/${service}-service
+done
+
+# Render templates (dry-run)
+helm template auth-service ./auth-service/charts/auth-service -f values-dev.yaml
+
+# Validate Kubernetes manifests
+helm template auth-service ./auth-service/charts/auth-service -f values-prod.yaml | kubeval --strict
+```
+
+---
+
 ## 📈 Performance & Scaling
 
 ### Horizontal Scaling

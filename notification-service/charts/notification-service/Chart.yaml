@@ -1,0 +1,32 @@
+apiVersion: v2
+name: notification-service
+description: A Helm chart for Notification Service microservice - Cotai MVP
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+# Chart dependencies for local development
+dependencies:
+  - name: redis
+    version: "~17.0.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+    tags:
+      - cache
+
+# Chart metadata
+home: https://github.com/casadeprovision2016/cotai
+sources:
+  - https://github.com/casadeprovision2016/cotai
+maintainers:
+  - name: Cotai Team
+    email: dev@cotai.example.com
+
+keywords:
+  - notification
+  - messaging
+  - microservice
+  - grpc
+  - cotai
+
+icon: https://raw.githubusercontent.com/casadeprovision2016/cotai/main/docs/assets/icon.png

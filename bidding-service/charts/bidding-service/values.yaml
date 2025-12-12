@@ -1,0 +1,210 @@
+# Default values for bidding-service
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: gcr.io/PROJECT_ID/cotai-bidding-service
+  pullPolicy: IfNotPresent
+  tag: "" # Overrides the image tag whose default is the chart appVersion.
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8090"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  grpcPort: 50051
+  metricsPort: 8090
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+  hosts:
+    - host: auth.cotai.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: auth-tls
+  #    hosts:
+  #      - auth.cotai.example.com
+
+resources:
+  enabled: false
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+livenessProbe:
+  grpc:
+    port: 50051
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  grpc:
+    port: 50051
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  successThreshold: 1
+  failureThreshold: 3
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Application configuration
+env:
+  SERVICE_NAME: bidding-service
+  ENVIRONMENT: development
+  LOG_LEVEL: info
+  LOG_FORMAT: json
+  PORT: "50051"
+  METRICS_PORT: "8090"
+  
+  # Database configuration (override in environment-specific values)
+  DATABASE_HOST: ""
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: bidding_service
+  DATABASE_USER: postgres
+  DATABASE_SSL_MODE: disable
+  
+  # Redis configuration
+  REDIS_HOST: ""
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  
+  # JWT configuration
+  JWT_EXPIRES_IN: "3600"
+  JWT_REFRESH_EXPIRES_IN: "604800"
+  
+  # OpenTelemetry configuration
+  OTEL_ENABLED: "true"
+  OTEL_SERVICE_NAME: bidding-service
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""
+  
+  # Feature flags
+  FEATURE_TOKEN_REFRESH: "true"
+  FEATURE_RATE_LIMITING: "false"
+
+# Secret references (never put actual secrets here!)
+secrets:
+  # Database password from external secret
+  databasePassword:
+    secretName: auth-db-credentials
+    key: password
+  
+  # JWT secret from external secret
+  jwtSecret:
+    secretName: auth-jwt-secret
+    key: secret
+  
+  # Redis password from external secret (if needed)
+  redisPassword:
+    secretName: auth-redis-credentials
+    key: password
+
+# PostgreSQL dependency (for local dev only)
+postgresql:
+  enabled: false
+  auth:
+    database: bidding_service
+    username: postgres
+    password: devpassword123
+  primary:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+
+# Redis dependency (for local dev only)
+redis:
+  enabled: false
+  architecture: standalone
+  auth:
+    enabled: true
+    password: devpassword123
+  master:
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+
+# Pod Disruption Budget (production only)
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Network Policy (production only)
+networkPolicy:
+  enabled: false
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: cotai
+      ports:
+      - protocol: TCP
+        port: 50051
+  egress:
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 5432  # PostgreSQL
+      - protocol: TCP
+        port: 6379  # Redis
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 53    # DNS
+      - protocol: UDP
+        port: 53    # DNS

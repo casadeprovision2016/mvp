@@ -1,0 +1,146 @@
+# Production environment values for auth-service
+# High availability, production-hardened configuration
+
+replicaCount: 3
+
+image:
+  repository: gcr.io/PROJECT_ID/cotai-auth-service
+  pullPolicy: Always
+  tag: ""  # Must be explicitly set in CI/CD (semantic version)
+
+resources:
+  enabled: true
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  timeoutSeconds: 3
+  successThreshold: 1
+  failureThreshold: 3
+
+env:
+  ENVIRONMENT: production
+  LOG_LEVEL: warn
+  LOG_FORMAT: json
+  # Cloud SQL connection via Cloud SQL Proxy sidecar or Private Service Connect
+  DATABASE_HOST: 10.20.30.10  # Cloud SQL production private IP
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: cotai_auth_prod
+  DATABASE_SSL_MODE: require
+  # Memorystore Redis HA configuration
+  REDIS_HOST: 10.20.30.20  # Memorystore production endpoint
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  # JWT production settings
+  JWT_EXPIRES_IN: 15m
+  JWT_REFRESH_EXPIRES_IN: 7d
+  # OpenTelemetry production configuration
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otel-collector.prod.cotai.internal:4317"
+  OTEL_SAMPLING_RATE: "0.1"  # 10% sampling in production
+  # Feature flags
+  FEATURE_TOKEN_REFRESH: "true"
+  FEATURE_RATE_LIMITING: "true"
+
+# Disable local databases (use Cloud SQL and Memorystore)
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
+
+# Enable PodDisruptionBudget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2  # Always keep 2 pods running during updates
+
+# Enable NetworkPolicy for production security
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: istio-system  # Service mesh traffic
+      - namespaceSelector:
+          matchLabels:
+            name: cotai-production
+        podSelector:
+          matchLabels:
+            app.kubernetes.io/name: api-gateway
+      ports:
+      - protocol: TCP
+        port: 50051  # gRPC
+      - protocol: TCP
+        port: 8090  # Metrics
+  egress:
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+      - protocol: UDP
+        port: 53  # DNS
+    - to:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 5432  # PostgreSQL (Cloud SQL proxy)
+      - protocol: TCP
+        port: 6379  # Redis (Memorystore)
+    - to:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443  # HTTPS (external APIs, OTEL collector)
+
+# Production ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+  hosts:
+    - host: auth.cotai.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: auth-prod-tls
+      hosts:
+        - auth.cotai.example.com
+
+# Production Service Account with Workload Identity
+serviceAccount:
+  create: true
+  annotations:
+    iam.gke.io/gcp-service-account: auth-service@PROJECT_ID.iam.gserviceaccount.com
+  name: "auth-service"

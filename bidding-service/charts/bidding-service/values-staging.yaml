@@ -1,0 +1,76 @@
+# Staging environment values for bidding-service
+# Pre-production testing environment
+
+replicaCount: 2
+
+image:
+  repository: gcr.io/PROJECT_ID/cotai-bidding-service
+  pullPolicy: Always
+  tag: "staging-latest"
+
+resources:
+  enabled: true
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 5
+
+env:
+  ENVIRONMENT: staging
+  LOG_LEVEL: info
+  # Use Cloud SQL proxy or direct connection
+  DATABASE_HOST: 10.10.10.10  # Cloud SQL private IP
+  DATABASE_SSL_MODE: require
+  # Use Memorystore Redis
+  REDIS_HOST: 10.10.10.20  # Memorystore private IP
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otel-collector.staging.cotai.internal:4317"
+  FEATURE_RATE_LIMITING: "true"
+
+# Disable local databases (use managed services)
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
+
+# Enable PDB for staging
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: auth.staging.cotai.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: auth-staging-tls
+      hosts:
+        - auth.staging.cotai.example.com
