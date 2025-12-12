@@ -1,0 +1,18 @@
+version: v1
+
+build:
+  roots:
+    - proto
+
+lint:
+  use:
+    - DEFAULT
+    - COMMENTS
+  except:
+    - PACKAGE_VERSION_SUFFIX
+
+breaking:
+  use:
+    - FILE
+  except:
+    - FILE_SAME_PACKAGE

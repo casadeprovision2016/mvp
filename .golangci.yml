@@ -1,0 +1,28 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - ineffassign
+    - misspell
+    - revive
+    - vet
+    - staticcheck
+    - gosimple
+    - unconvert
+    - errcheck
+    - gocritic
+
+linters-settings:
+  revive:
+    min-confidence: 0.8
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gocritic

@@ -9,32 +9,102 @@ Convenções usadas:
 
 ---
 
+## 📋 STATUS: Fase 0 ✅ COMPLETA
+
+**Data**: 12 de Dezembro de 2025  
+**Novos Documentos Criados**:
+- `README.md` — Overview do projeto, quick-start, troubleshooting
+- `CONTRIBUTING.md` — Workflow de desenvolvimento, padrões de código, processo de PR
+- `CODEOWNERS` — Ownership de serviços e assignments de review
+- `.gitignore` — Proteção de secrets e artefatos
+- `docs/MVP-SCOPE.md` — Features, acceptance criteria, timeline
+- `docs/ARTIFACT-NAMING.md` — Schema de container/Helm, CI/CD integration
+
+---
+
 ## Fase 0: Concepção e Pré-requisitos
-- [ ] **`[MVP]`**: Definir o escopo mínimo, funcionalidades e critérios de sucesso.
-- [ ] **`[nome_do_app]`**: Escolher nome canônico do projeto e esquema de artefatos (image/helm/chart names).
-- [ ] Arquitetura: decidir `(Microservices vs Monolith)` e documentar trade-offs.
-- [ ] Definir `branching_strategy` `(GitFlow | Trunk-Based)` e padrão de commits `(Conventional Commits)`.
-- [ ] Definir SLIs/SLOs, requisitos de segurança, conformidade e observabilidade (traces/metrics/logs).
-- [ ] Preparar estações de trabalho: instalar e validar `git`, `docker`, `minikube`, `kubectl`, `helm`, `python`/`pip`/`virtualenv`, `go`, `golangci-lint`, `trivy`.
-- [ ] Inicializar repositório com `README.md`, `CODEOWNERS`, `CONTRIBUTING.md` e `.gitignore`.
+- [x] **`[MVP]`**: Definir o escopo mínimo, funcionalidades e critérios de sucesso.
+  - Referência: `docs/MVP-SCOPE.md` (6 core features, acceptance criteria, phased delivery, KPIs)
+- [x] **`[nome_do_app]`**: Escolher nome canônico do projeto e esquema de artefatos (image/helm/chart names).
+  - Nome: **Cotai** — Multi-tenant procurement platform
+  - Schema: `gcr.io/PROJECT_ID/cotai-SERVICE_NAME:TAG` (documentado em `docs/ARTIFACT-NAMING.md`)
+- [x] Arquitetura: decidir `(Microservices vs Monolith)` e documentar trade-offs.
+  - **Microservices** (8 core services) com Domain-Driven Design (DDD)
+  - Referência: `docs/arquiteture.md`, ADRs em `docs/adr/`
+- [x] Definir `branching_strategy` `(GitFlow | Trunk-Based)` e padrão de commits `(Conventional Commits)`.
+  - **GitFlow**: main (prod), develop (integration), feature/*, release/*, hotfix/*
+  - **Conventional Commits**: type(scope): subject [body] [footer]
+  - Referência: `CONTRIBUTING.md`
+- [x] Definir SLIs/SLOs, requisitos de segurança, conformidade e observabilidade (traces/metrics/logs).
+  - **SLIs**: Latency (P95/P99), Error Rate, Availability, Success Rate, Throughput (docs/observability.md §5)
+  - **SLOs**: 99.5% uptime, P95 < 500ms, error rate < 0.5% (docs/MVP-SCOPE.md)
+  - **Security**: OAuth2/OIDC, mTLS, RLS (PostgreSQL), Vault, no hardcoded secrets
+  - **Observability**: OpenTelemetry → Jaeger (traces), Prometheus (metrics), Loki (logs)
+  - **Compliance**: LGPD audit logs, data retention, PII masking
+- [x] Preparar estações de trabalho: instalar e validar `git`, `docker`, `minikube`, `kubectl`, `helm`, `python`/`pip`/`virtualenv`, `go`, `golangci-lint`, `trivy`.
+  - Script: `scripts/setup-workstation.sh` (validação + instalação automática)
+  - Suporta: Linux (Ubuntu/Debian), macOS
+- [x] Inicializar repositório com `README.md`, `CODEOWNERS`, `CONTRIBUTING.md` e `.gitignore`.
+  - `README.md`: Overview, quick-start, architecture, troubleshooting
+  - `CONTRIBUTING.md`: Git workflow, code standards, PR process
+  - `CODEOWNERS`: Service ownership, review assignments
+  - `.gitignore`: Secrets, build artifacts, IDE files (Go, Java, Python, Node.js)
+
+---
+
+## 📋 STATUS: Fase 1 ✅ COMPLETA
+
+**Data**: 12 de Dezembro de 2025  
+**Artefatos Criados**:
+- `Makefile` — Central orchestration para Minikube, Docker, Kubernetes e build automation (250+ linhas, 40+ targets)
+- `scripts/init-project-structure.sh` — Initialize 7 microservices com standard Go layout (300+ linhas)
+- `scripts/local-start.sh` — One-command local environment startup orchestration (40 linhas)
+- `scripts/verify-setup.sh` — Tool validation com git config checks (120 linhas)
+- `scripts/verify-cluster.sh` — Kubernetes cluster verification e addon status (150+ linhas)
+- `scripts/scaffold-service.sh` — Generate new microservice boilerplate com gRPC template (200+ linhas)
+- **7 Microservice Directories**: `auth-service`, `edital-service`, `procurement-service`, `bidding-service`, `notification-service`, `audit-service`, `api-gateway`
+  - Each with: `cmd/`, `internal/{config,handlers,models,repository,service}`, `pkg/`, `proto/`, `charts/`, `tests/`, `docker/`, `configs/`
+  - Files: `README.md`, `.env.example`, `go.mod`, `go.sum`, `Dockerfile`, `.golangci.yml`, `buf.yaml`
+- **Shared Infrastructure**: `kubernetes/`, `terraform/`, `proto/v1/`
 
 ---
 
 ## Fase 1: Configuração do Ambiente e Infraestrutura Local
 
-### Seção 1.1: Cluster Kubernetes Local
-- [ ] Iniciar cluster Minikube: `minikube start --driver=docker --addons=ingress,metrics-server`.
-- [ ] (Opcional) Usar daemon Docker do Minikube para builds locais: `eval $(minikube docker-env)`.
-- [ ] Configurar `kubectl` context para Minikube: `kubectl config use-context minikube`.
-- [ ] Verificar status do cluster e namespaces: `kubectl get nodes`, `kubectl get ns` (verificar `kube-system`, `default`).
+### Seção 1.1: Cluster Kubernetes Local ✅
+- [x] Iniciar cluster Minikube: Makefile target `make minikube-start` (docker driver, ingress+metrics-server addons, 4CPU, 8GB RAM).
+  - Command: `minikube start --driver=docker --addons=ingress,metrics-server --cpus=4 --memory=8192`
+  - Reference: `Makefile` lines 15-25
+- [x] Usar daemon Docker do Minikube para builds locais: `make docker-env` (eval $(minikube docker-env)).
+  - Reference: `Makefile` lines 28-32
+- [x] Configurar `kubectl` context para Minikube: `make kubectl-context`.
+  - Command: `kubectl config use-context minikube`
+  - Reference: `Makefile` lines 35-39
+- [x] Verificar status do cluster e namespaces: `make verify-cluster` (kubectl get nodes, addons, endpoints).
+  - Script: `scripts/verify-cluster.sh` (150+ linhas com status indicators)
+  - Checks: cluster-info, nodes, namespaces, addons (ingress, metrics-server), API health
+  - Reference: `Makefile` lines 42-46
 
-### Seção 1.2: Estrutura do Projeto
-- [ ] Criar raiz do repositório: `[nome_do_app]-project/`.
-- [ ] Definir layout (exemplos):
-  - Go: `cmd/`, `internal/`, `pkg/`, `configs/`, `scripts/`, `charts/`, `proto/`.
-  - Python: `src/`, `tests/`, `configs/`, `scripts/`, `charts/`, `proto/`.
-- [ ] Criar `Makefile`/`scripts/` com alvos: `local-start`, `build`, `test`, `lint`, `ci-checks`.
-- [ ] Criar diretórios: `docker/`, `kubernetes/` ou `charts/`, `docs/`.
+### Seção 1.2: Estrutura do Projeto ✅
+- [x] Criar raiz do repositório: `/home/felipe/dev/mvp` (Cotai MVP project).
+- [x] Definir e implementar layout Go standard:
+  - Per-service: `cmd/{service}`, `internal/{config,handlers,models,repository,service}`, `pkg/`, `proto/`, `charts/`, `tests/{unit,integration}`, `docker/`, `configs/`
+  - Shared: `kubernetes/`, `terraform/`, `proto/v1/`
+  - Reference: `scripts/init-project-structure.sh` lines 50-100
+- [x] Criar `Makefile` com alvos: `minikube-start`, `docker-env`, `kubectl-context`, `setup-local`, `verify-cluster`, `build`, `test`, `lint`, `ci-checks`.
+  - File: `Makefile` (250+ lines, 40+ targets, organized into 5 groups)
+  - Targets include: Minikube lifecycle, Docker config, Kubectl config, namespace setup, build/test automation, cleanup
+  - Reference: `Makefile` complete file
+- [x] Criar diretórios estruturados: `docker/`, `kubernetes/`, `charts/`, `docs/`, `proto/`, `scripts/`.
+  - Execution: `bash scripts/init-project-structure.sh` (created 7 services + 3 shared dirs)
+  - Result: All 7 service directories initialized with full structure
+- [x] Criar utilitários de CLI: `scripts/local-start.sh`, `scripts/verify-setup.sh`, `scripts/verify-cluster.sh`, `scripts/scaffold-service.sh`.
+  - `local-start.sh`: One-command startup orchestration (40 lines)
+  - `verify-setup.sh`: Tool validation with git config checks (120 lines)
+  - `verify-cluster.sh`: Cluster verification with addon status (150+ lines)
+  - `scaffold-service.sh`: New service generation tool (200+ lines, template-driven)
+  - All scripts include: color-coded output (✅/❌), error handling, descriptive help
+  - Reference: `scripts/` directory
 
 ---
 
