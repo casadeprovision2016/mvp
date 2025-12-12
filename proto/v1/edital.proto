@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package cotai.edital.v1;
+
+option go_package = "github.com/casadeprovision2016/cotai/proto/gen/v1/cotai/edital";
+
+import "v1/common.proto";
+
+// EditalService manages procurement notices/editals
+service EditalService {
+  // CreateEdital creates a new procurement notice
+  rpc CreateEdital(CreateEditalRequest) returns (CreateEditalResponse);
+  
+  // GetEdital retrieves a procurement notice by ID
+  rpc GetEdital(GetEditalRequest) returns (GetEditalResponse);
+  
+  // ListEditals lists procurement notices with filtering
+  rpc ListEditals(ListEditalsRequest) returns (ListEditalsResponse);
+  
+  // UpdateEdital updates an existing edital
+  rpc UpdateEdital(UpdateEditalRequest) returns (UpdateEditalResponse);
+  
+  // PublishEdital publishes an edital to vendors
+  rpc PublishEdital(PublishEditalRequest) returns (PublishEditalResponse);
+}
+
+// CreateEditalRequest creates new procurement notice
+message CreateEditalRequest {
+  string title = 1;
+  string description = 2;
+  Edital.Type type = 3;
+  int64 budget = 4;
+  int64 deadline = 5;
+  repeated string categories = 6;
+  cotai.v1.Metadata metadata = 7;
+}
+
+// CreateEditalResponse returns created edital
+message CreateEditalResponse {
+  Edital edital = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// GetEditalRequest retrieves an edital
+message GetEditalRequest {
+  string id = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// GetEditalResponse returns the edital
+message GetEditalResponse {
+  Edital edital = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// ListEditalsRequest lists editals with pagination
+message ListEditalsRequest {
+  string status = 1;
+  int32 page_size = 2;
+  int32 page = 3;
+  string sort_by = 4;
+  cotai.v1.Metadata metadata = 5;
+}
+
+// ListEditalsResponse returns paginated editals
+message ListEditalsResponse {
+  repeated Edital editals = 1;
+  cotai.v1.PageInfo page_info = 2;
+  cotai.v1.Metadata metadata = 3;
+}
+
+// UpdateEditalRequest updates an edital
+message UpdateEditalRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int64 deadline = 4;
+  cotai.v1.Metadata metadata = 5;
+}
+
+// UpdateEditalResponse returns updated edital
+message UpdateEditalResponse {
+  Edital edital = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// PublishEditalRequest publishes an edital
+message PublishEditalRequest {
+  string id = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// PublishEditalResponse confirms publication
+message PublishEditalResponse {
+  bool success = 1;
+  Edital edital = 2;
+  cotai.v1.Metadata metadata = 3;
+}
+
+// Edital represents a procurement notice
+message Edital {
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_PUBLIC = 1;
+    TYPE_RESTRICTED = 2;
+    TYPE_DIRECT = 3;
+  }
+  
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_DRAFT = 1;
+    STATUS_PUBLISHED = 2;
+    STATUS_BIDDING = 3;
+    STATUS_CLOSED = 4;
+    STATUS_AWARDED = 5;
+    STATUS_CANCELLED = 6;
+  }
+  
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  Type type = 4;
+  Status status = 5;
+  int64 budget = 6;
+  int64 created_at = 7;
+  int64 deadline = 8;
+  int64 published_at = 9;
+  repeated string categories = 10;
+  string created_by = 11;
+  string tenant_id = 12;
+}

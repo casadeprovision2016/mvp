@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package cotai.auth.v1;
+
+option go_package = "github.com/casadeprovision2016/cotai/proto/gen/v1/cotai/auth";
+
+import "v1/common.proto";
+
+// AuthService provides user authentication and token management
+service AuthService {
+  // Login authenticates a user and returns access/refresh tokens
+  rpc Login(LoginRequest) returns (LoginResponse);
+  
+  // ValidateToken validates an access token
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  
+  // RefreshToken exchanges a refresh token for a new access token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  // Logout invalidates a user's tokens
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+// LoginRequest contains user credentials
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+  string tenant_id = 3;
+  cotai.v1.Metadata metadata = 4;
+}
+
+// LoginResponse contains authentication tokens
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int32 expires_in = 3;
+  User user = 4;
+  cotai.v1.Metadata metadata = 5;
+}
+
+// ValidateTokenRequest validates an access token
+message ValidateTokenRequest {
+  string token = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// ValidateTokenResponse indicates if token is valid
+message ValidateTokenResponse {
+  bool valid = 1;
+  User user = 2;
+  int64 expires_at = 3;
+  cotai.v1.Metadata metadata = 4;
+}
+
+// RefreshTokenRequest exchanges refresh token for access token
+message RefreshTokenRequest {
+  string refresh_token = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// RefreshTokenResponse contains new access token
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int32 expires_in = 3;
+  cotai.v1.Metadata metadata = 4;
+}
+
+// LogoutRequest invalidates tokens
+message LogoutRequest {
+  string token = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// LogoutResponse confirms logout
+message LogoutResponse {
+  bool success = 1;
+  cotai.v1.Metadata metadata = 2;
+}
+
+// User represents an authenticated user
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string tenant_id = 4;
+  repeated string roles = 5;
+}
+
+// TokenClaims represents JWT token claims
+message TokenClaims {
+  string user_id = 1;
+  string email = 2;
+  string tenant_id = 3;
+  repeated string roles = 4;
+  int64 issued_at = 5;
+  int64 expires_at = 6;
+}

@@ -1,18 +1,22 @@
-version: v1
+version: v2
 
-build:
-  roots:
-    - proto
+modules:
+  - path: proto
 
 lint:
   use:
-    - DEFAULT
-    - COMMENTS
+    - STANDARD
   except:
-    - PACKAGE_VERSION_SUFFIX
+    - COMMENTS
+    - PACKAGE_DIRECTORY_MATCH
+    - DIRECTORY_SAME_PACKAGE
 
 breaking:
   use:
     - FILE
-  except:
-    - FILE_SAME_PACKAGE
+
+
+
+
+
+

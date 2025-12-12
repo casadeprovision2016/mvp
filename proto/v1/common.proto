@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package cotai.v1;
+
+option go_package = "github.com/casadeprovision2016/cotai/proto/gen/v1/cotai";
+
+// Metadata contains common request/response metadata
+message Metadata {
+  string request_id = 1;
+  string trace_id = 2;
+  string user_id = 3;
+  string tenant_id = 4;
+  int64 timestamp = 5;
+}
+
+// Error represents a service error response
+message Error {
+  string code = 1;        // Error code (e.g., "INVALID_ARGUMENT", "NOT_FOUND")
+  string message = 2;     // Human-readable error message
+  string details = 3;     // Additional error details
+  Metadata metadata = 4;
+}
+
+// HealthCheckRequest is used for service health checks
+message HealthCheckRequest {
+  string service = 1;
+}
+
+// HealthCheckResponse is returned from health check requests
+message HealthCheckResponse {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_SERVING = 1;
+    STATUS_NOT_SERVING = 2;
+    STATUS_UNKNOWN_SERVICE = 3;
+  }
+  Status status = 1;
+}
+
+// PageInfo provides pagination info for list responses
+message PageInfo {
+  int32 total_count = 1;
+  int32 page_size = 2;
+  int32 current_page = 3;
+  int32 total_pages = 4;
+}
