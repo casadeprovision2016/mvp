@@ -1,0 +1,377 @@
+# Cotai .gitignore
+# Comprehensive ignore patterns for Go, Java, Python, Node.js, and IDE artifacts
+# Do NOT commit credentials, keys, secrets, or sensitive files
+
+# ============================================================================
+# IDE & Editor Artifacts
+# ============================================================================
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+*.code-workspace
+
+# IntelliJ IDEA / PyCharm / DataGrip
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================================================
+# Build & Dependency Artifacts
+# ============================================================================
+
+# Go
+vendor/
+go.sum
+dist/
+*.test
+*.out
+*.cover
+coverage.txt
+coverage.html
+
+# Java / Gradle
+build/
+.gradle/
+*.jar
+*.war
+*.ear
+*.zip
+target/
+.classpath
+.project
+.settings/
+bin/
+.m2/
+*.class
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+*.pyc
+.tox/
+.hypothesis/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+.eslintcache
+dist/
+build/
+
+# Docker
+docker-compose.override.yml
+
+# Kubernetes
+kubeconfig
+kubeconfig.yaml
+
+# ============================================================================
+# Sensitive Data (NEVER COMMIT)
+# ============================================================================
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+*.p8
+
+# SSH Keys
+.ssh/
+*.pub
+id_rsa
+id_ed25519
+
+# Credentials & Secrets
+credentials.json
+service-account-key.json
+.credentials
+secrets/
+.vault-token
+.docker/config.json
+
+# API Keys & Tokens
+.apikey
+.token
+.bearer_token
+
+# AWS
+.aws/
+aws_access_key_id
+aws_secret_access_key
+
+# GCP
+gcloud/
+*.p12
+service_account.json
+
+# Kubernetes Secrets
+kubeconfig
+kubeseal-*
+
+# OAuth & Authentication
+.oauth2
+.openid
+
+# ============================================================================
+# Runtime Artifacts
+# ============================================================================
+
+# Local development databases
+*.sqlite
+*.sqlite3
+*.db
+data/
+postgres_data/
+redis_data/
+mongodb_data/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# ============================================================================
+# Testing & Coverage
+# ============================================================================
+
+# Coverage reports
+coverage/
+coverage.out
+coverage.html
+coverage.xml
+.coverage
+htmlcov/
+
+# Test artifacts
+test-results/
+test-reports/
+xunit-reports/
+
+# ============================================================================
+# Docker & Container
+# ============================================================================
+
+# Docker build context
+docker-build-context/
+
+# ============================================================================
+# Kubernetes & Helm
+# ============================================================================
+
+# Helm rendered templates (local test output)
+helm-render-output/
+rendered-manifests/
+
+# Minikube
+.minikube/
+.minikube_lastrun
+
+# ============================================================================
+# CI/CD Artifacts
+# ============================================================================
+
+# GitHub Actions
+.github/workflows/debug-output/
+
+# Build artifacts
+bin/
+dist/
+
+# ============================================================================
+# Protocol Buffers
+# ============================================================================
+
+# Generated protobuf files (kept in repo, but ignore IDE refs)
+*.pb.go
+*.pb.gw.go
+*_pb2.py
+*_pb2_grpc.py
+
+# ============================================================================
+# Local Development & Scratch
+# ============================================================================
+
+# Scratch files and notes
+scratch/
+notes/
+.notes
+*.scratch
+*.todo
+
+# Local test data
+test-data/
+fixtures/
+
+# Local docker-compose overrides
+docker-compose.local.yml
+docker-compose.override.yml
+
+# ============================================================================
+# IDE Configuration (version control discouraged)
+# ============================================================================
+
+.editorconfig.local
+.prettierrc.local
+.eslintrc.local
+
+# ============================================================================
+# Package Manager Locks (sometimes tracked, sometimes not)
+# ============================================================================
+
+# Uncomment if you want to commit lock files (recommended for reproducibility)
+# go.sum                    # Often committed
+# package-lock.json         # Often committed
+# requirements.txt.lock     # Sometimes committed
+# Pipfile.lock              # Sometimes committed
+# poetry.lock               # Sometimes committed
+
+# ============================================================================
+# Vendor/Third-party
+# ============================================================================
+
+vendor/
+node_modules/
+.vendor/
+
+# ============================================================================
+# Archive & Backup Files
+# ============================================================================
+
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.7z
+*.bak
+*.backup
+*~
+
+# ============================================================================
+# Large Files (optional — configure Git LFS if needed)
+# ============================================================================
+
+# Uncomment if using Git LFS
+# *.tar.gz filter=lfs diff=lfs merge=lfs -text
+# *.zip filter=lfs diff=lfs merge=lfs -text
+
+# ============================================================================
+# IDE-specific ignores
+# ============================================================================
+
+# VS Code workspace settings
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# IntelliJ
+.idea/
+*.iml
+
+# PyCharm
+.idea/
+*.iml
+
+# GoLand
+.idea/
+*.iml
+
+# ============================================================================
+# Build outputs that should never be committed
+# ============================================================================
+
+# Executable binaries
+*.exe
+*.dll
+*.dylib
+*.so
+*.a
+*.o
+
+# ============================================================================
+# Local Kubernetes
+# ============================================================================
+
+# Minikube
+.minikube/
+.minikube_profile
+
+# Kind (Kubernetes In Docker)
+.kube/
+
+# ============================================================================
+# Override .gitignore for specific files (use git add -f if needed)
+# ============================================================================
+
+# Example: to track a specific file despite .gitignore, use:
+# git add -f path/to/file

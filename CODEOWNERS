@@ -1,0 +1,129 @@
+# CODEOWNERS for Cotai
+
+This file defines code ownership and review responsibilities for Cotai services and domains.
+GitHub automatically requests reviews from listed owners on pull requests.
+
+## Global Defaults
+
+* @platform-team @infrastructure-team
+
+## Service-Specific Ownership
+
+# Auth Service — Authentication, OAuth2, JWT, MFA
+/services/auth-service/ @auth-team @security-team
+
+# Edital Service — Tender/RFQ management, publication, lifecycle
+/services/edital-service/ @procurement-team
+
+# Cotação Service — Quotation management, vendor responses, scoring
+/services/cotacao-service/ @procurement-team @analytics-team
+
+# Notificação Service — Email, SMS, in-app notifications
+/services/notificacao-service/ @backend-team @platform-team
+
+# Fornecedor Service — Vendor profiles, registration, evaluation
+/services/fornecedor-service/ @procurement-team @vendor-management-team
+
+# Extração Service — Document OCR, NLP, data extraction
+/services/extracao-service/ @ml-team @data-team
+
+# Estoque Service — Inventory management, stock levels, forecasting
+/services/estoque-service/ @supply-chain-team
+
+# Chat Service — Real-time messaging, collaboration
+/services/chat-service/ @backend-team
+
+## Infrastructure & Deployment
+
+# Kubernetes manifests, Helm charts
+/charts/ @platform-team @infrastructure-team
+/kubernetes/ @platform-team @infrastructure-team
+/helm/ @platform-team @infrastructure-team
+
+# CI/CD Workflows
+/.github/workflows/ @platform-team @devops-team
+/.github/actions/ @platform-team @devops-team
+
+# Docker files and container configuration
+Dockerfile @platform-team
+.dockerignore @platform-team
+
+# Configuration and Secrets (Vault, environment setup)
+/configs/ @platform-team @infrastructure-team
+/scripts/setup-* @platform-team
+/.env.example @platform-team
+
+## Protocol Buffers & APIs
+
+# Proto definitions (shared contracts)
+/proto/ @api-team @platform-team
+
+# gRPC service definitions
+/services/*/proto/ @api-team
+
+## Documentation & Architecture
+
+# Architecture decisions
+/docs/adr/ @architecture-team @platform-team
+/docs/arquiteture.md @architecture-team
+/docs/multitenancy.md @platform-team @data-team
+/docs/observability.md @platform-team @devops-team
+/docs/ci-cd-guidelines.md @devops-team @platform-team
+
+# Contributing and guidelines
+CONTRIBUTING.md @platform-team
+CODEOWNERS @platform-team
+
+## Testing & Quality
+
+# Test infrastructure, test utilities
+/test/ @qa-team @platform-team
+/*/test/ @qa-team
+
+# Integration tests for specific service
+/services/*/test/integration/ @qa-team
+
+## Security & Compliance
+
+# Security policies, compliance configurations
+/security/ @security-team
+
+# Dependency management
+go.mod @platform-team
+go.sum @platform-team
+package.json @platform-team
+package-lock.json @platform-team
+requirements.txt @platform-team
+pom.xml @platform-team
+build.gradle @platform-team
+
+## Root-level Files
+
+README.md @platform-team
+LICENSE @legal-team
+.gitignore @platform-team
+.gitattributes @platform-team
+Makefile @platform-team @infrastructure-team
+
+---
+
+## Notes
+
+- **@platform-team**: Infrastructure, deployment, observability, CI/CD
+- **@auth-team**: Authentication, identity, security protocols
+- **@security-team**: Security, compliance, secrets management
+- **@procurement-team**: Core procurement domain (tenders, quotations, vendors)
+- **@api-team**: API design, gRPC contracts, protocol buffers
+- **@qa-team**: Testing, quality assurance, test automation
+- **@backend-team**: Backend services, libraries, utilities
+
+## Escalation
+
+- **Security concerns**: Tag `@security-team` explicitly in comment
+- **Architecture changes**: Create ADR and tag `@architecture-team`
+- **Production incidents**: Ping on-call via PagerDuty (see `docs/runbooks/`)
+
+---
+
+**Last Updated**: December 2025  
+**Maintained By**: Platform Engineering Team
